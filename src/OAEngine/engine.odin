@@ -5,7 +5,7 @@ import rl "vendor:raylib"
 
 State :: struct {
     cfg: Configs,
-    cam: Camera,
+    cam: rl.Camera2D,
 }
 
 // Deletes a state struct
