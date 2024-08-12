@@ -3,18 +3,9 @@ package OAEngine
 import "core:fmt"
 import rl "vendor:raylib"
 
-Configs :: struct {
-    windowWidth: i32,
-    windowHeight: i32,
-    windowTitle: cstring,
-    targetFPS: i32,
-    vsync: bool,
-    fullscreen: bool,
-    resizeable: bool,
-}
-
 State :: struct {
     cfg: Configs,
+    cam: Camera,
 }
 
 // Deletes a state struct
@@ -24,18 +15,9 @@ destroy_state :: proc(using state: ^State) {
 
 //
 init_raylib_window :: proc(using state: ^State) {
-    flags: rl.ConfigFlags = {}
-    if cfg.vsync {
-        flags += {rl.ConfigFlag.VSYNC_HINT}
-    }
-    if cfg.fullscreen {
-        flags += {rl.ConfigFlag.FULLSCREEN_MODE}
-    }
-    if cfg.resizeable {
-        flags += {rl.ConfigFlag.WINDOW_RESIZABLE}
-    }
+    create_flags_from_state(&state.cfg)
 
-    rl.SetConfigFlags(flags)
+    rl.SetConfigFlags(state.cfg.flags)
 
     rl.InitWindow(cfg.windowWidth, cfg.windowHeight, cfg.windowTitle)
     rl.SetTargetFPS(cfg.targetFPS)
