@@ -13,6 +13,8 @@ Configs :: struct {
     resizeable: bool,
 
     flags: rl.ConfigFlags,
+
+    useCam: bool,
 }
 
 create_flags_from_state :: proc(using cfg: ^Configs) {
