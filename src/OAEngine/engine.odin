@@ -7,16 +7,14 @@ Configs :: struct {
     windowWidth: i32,
     windowHeight: i32,
     windowTitle: cstring,
+    targetFPS: i32,
+    vsync: bool,
+    fullscreen: bool,
+    resizeable: bool,
 }
 
 State :: struct {
     cfg: Configs,
-}
-
-set_state_cfgs_window :: proc(using config: ^Configs, width: i32, height: i32, title: cstring) {
-    windowWidth = width
-    windowHeight = height
-    windowTitle = title
 }
 
 // Deletes a state struct
@@ -26,9 +24,21 @@ destroy_state :: proc(using state: ^State) {
 
 //
 init_raylib_window :: proc(using state: ^State) {
-    rl.InitWindow(cfg.windowWidth, cfg.windowHeight, cfg.windowTitle)
+    flags: rl.ConfigFlags = {}
+    if cfg.vsync {
+        flags += {rl.ConfigFlag.VSYNC_HINT}
+    }
+    if cfg.fullscreen {
+        flags += {rl.ConfigFlag.FULLSCREEN_MODE}
+    }
+    if cfg.resizeable {
+        flags += {rl.ConfigFlag.WINDOW_RESIZABLE}
+    }
 
-    rl.SetTargetFPS(60)
+    rl.SetConfigFlags(flags)
+
+    rl.InitWindow(cfg.windowWidth, cfg.windowHeight, cfg.windowTitle)
+    rl.SetTargetFPS(cfg.targetFPS)
 }
 
 //
