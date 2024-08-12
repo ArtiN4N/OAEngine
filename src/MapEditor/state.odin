@@ -3,14 +3,10 @@ package OAEngine
 import "core:fmt"
 import rl "vendor:raylib"
 
-drawCallback :: proc(using state: ^State)
-
 // Holds all data of the game
 State :: struct {
     cfg: Configs,
     camera: Camera,
-
-    drawLayer1: [dynamic]drawCallback,
 }
 
 init_state :: proc() -> State {
