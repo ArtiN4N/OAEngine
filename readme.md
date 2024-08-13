@@ -5,6 +5,9 @@
     - [ ] screen shake
 - [x] configs
     - [x] window configs
+- [x] hot reloading
+    - [x] bash scripts
+    - [x] update game source code structure
 - [ ] UI
     - [ ] menus
     - [ ] settings
