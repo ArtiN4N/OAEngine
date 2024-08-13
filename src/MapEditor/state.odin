@@ -1,24 +1,24 @@
-package OAEngine
+package mapeditor
 
 import "core:fmt"
 import rl "vendor:raylib"
+import OAE "../OAEngine"
 
 // Holds all data of the game
 State :: struct {
-    cfg: Configs,
-    camera: Camera,
+    cfg: OAE.Configs,
+    camera: OAE.Camera,
 }
 
 init_state :: proc() -> State {
     state := State{}
-    state.drawLayer1 = make([dynamic]drawCallback)
 
     return state
 }
 
 // Deletes a state struct
 destroy_state :: proc(using state: ^State) {
-    delete(drawLayer1)
+
 }
 
 draw :: proc(using state: ^State) {

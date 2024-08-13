@@ -13,8 +13,6 @@ Configs :: struct {
     resizeable: bool,
 
     flags: rl.ConfigFlags,
-
-    useCam: bool,
 }
 
 create_flags_from_state :: proc(using cfg: ^Configs) {
@@ -27,4 +25,19 @@ create_flags_from_state :: proc(using cfg: ^Configs) {
     if resizeable {
         flags += {rl.ConfigFlag.WINDOW_RESIZABLE}
     }
+}
+
+//
+init_raylib_window :: proc(cfg: ^Configs) {
+    create_flags_from_state(cfg)
+
+    rl.SetConfigFlags(cfg.flags)
+
+    rl.InitWindow(cfg.windowWidth, cfg.windowHeight, cfg.windowTitle)
+    rl.SetTargetFPS(cfg.targetFPS)
+}
+
+//
+destroy_raylib_window :: proc() {
+    rl.CloseWindow()
 }

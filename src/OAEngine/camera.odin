@@ -9,15 +9,12 @@ import rl "vendor:raylib"
 Camera :: struct {
     view: rl.Camera2D,
     follow: ^rl.Vector2,
+    following: bool,
 }
 
-init_camera :: proc(vec: ^rl.Vector2) -> Camera {
-    view := rl.Camera2D{}
-
-    camera := Camera{
-        view,
-        vec,
-    }
+init_camera :: proc() -> Camera {
+    camera := Camera{}
+    camera.following = false
 
     return camera
 }
@@ -30,6 +27,7 @@ camera_update :: proc(using cam: ^Camera) {
 // changes the follow vector pointer
 set_camera_follow :: proc(using cam: ^Camera, target: ^rl.Vector2) {
     follow = target
+    following = true
 }
 
 set_camera_offset :: proc(using cam: ^Camera, offset: rl.Vector2) {
@@ -42,8 +40,4 @@ set_camera_rotation :: proc(using cam: ^Camera, rotation: f32) {
 
 set_camera_zoom :: proc(using cam: ^Camera, zoom: f32) {
     view.zoom = zoom
-}
-
-draw_with_camera :: proc(using state: ^State) {
-
 }
