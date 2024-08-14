@@ -4,3 +4,4 @@ src/*.odin
 build/
 release/
 *.so
+ols.json
