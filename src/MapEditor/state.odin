@@ -6,7 +6,7 @@ import OAE "../OAEngine"
 
 // Holds all data of the game
 State :: struct {
-    memory: ^OAE.GameMemory,
+    memory: ^GameMemory,
     cfg: OAE.Configs,
     camera: OAE.Camera,
 }
@@ -38,9 +38,9 @@ game_init :: proc() {
     state.cfg.fullscreen = false
     state.cfg.resizeable = true
 
-    state.memory = new(OAE.GameMemory)
+    state.memory = new(GameMemory)
 
-    state.memory^ = OAE.GameMemory {
+    state.memory^ = GameMemory {
     }
 
     game_hot_reloaded(state.memory)
@@ -64,5 +64,5 @@ game_memory_size :: proc() -> int {
 
 @(export)
 game_hot_reloaded :: proc(mem: rawptr) {
-    state.memory = (^OAE.GameMemory)(mem)
+    state.memory = (^GameMemory)(mem)
 }
