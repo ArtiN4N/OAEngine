@@ -8,12 +8,22 @@
 - [x] hot reloading
     - [x] bash scripts
     - [x] update game source code structure
-- [ ] UI
-    - [ ] menus
-    - [ ] settings
+- [ ] UI editor
+    - [ ] z-index
+    - [ ] fonts
+    - [ ] text
+        - [ ] font
+        - [ ] size
+        - [ ] color
+        - [ ] animation
+            - [ ] delay
+            - [ ] shake
+    - [ ] button
+        - [ ] link button
+        - [ ] checkbox
+        - [ ] cycle button
+        - [ ] callback button
+    - [ ] shapes
+    - [ ] popup
+    - [ ] images
     - [ ] text input
-    - [ ] ingame UI
-        - [ ] shops
-        - [ ] dialogue
-        - [ ] inventory
-        - [ ] quicktime event
