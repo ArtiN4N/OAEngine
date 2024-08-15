@@ -4,7 +4,7 @@ import "core:fmt"
 import rl "vendor:raylib"
 
 
-UIInput :: struct {
+UITextInput :: struct {
     
 }
 
@@ -24,11 +24,7 @@ UIText :: struct {
 
 }
 
-UIParent :: struct {
-    
-}
-
-UIForm :: struct {
+UIForm :: struct(T: int, B: int, S: int, I: int, TI: int) {
     active: bool,
 
     // Whether the size, position is relative to its parent container
@@ -48,10 +44,21 @@ UIForm :: struct {
     height: i32,
 
     color: rl.Color,
+
+    texts: [T]UIText,
+    buttons: [B]UIButton,
+    shapes: [S]UIShape,
+    images: [I]UIImage,
+    textInputs: [TI]UITextInput,
 }
 
-init_uiform :: proc(active: bool, x: i32, y: i32, width: i32, height: i32, color: rl.Color) -> UIForm {
-    return {
+init_uiform :: proc(
+    active: bool, 
+    x: i32, y: i32, width: i32, height: i32, 
+    color: rl.Color,
+    $T: int, $B: int, $S: int, $I: int, $TI: int
+) -> UIForm(T, B, S, I, TI) {
+    return UIForm(T, B, S, I, TI){
         active,
         {},
         x, y, width, height, 
