@@ -9,7 +9,7 @@ State :: struct {
     memory: ^GameMemory,
     cfg: OAE.Configs,
     camera: OAE.Camera,
-    uis: [dynamic]OAE.UIForm,
+    uis: [dynamic]^OAE.UIForm,
 }
 
 update :: proc(state: ^State) {
@@ -71,7 +71,7 @@ game_init :: proc() {
     OAE.add_uiparent(&state.uis[1], true, state.uis[0])
 
     form3 := OAE.init_uiform(
-        true,
+        false,
         800, 800, 100, 100,
         rl.BLUE,
     )
