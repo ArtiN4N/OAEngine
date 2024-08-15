@@ -34,7 +34,10 @@ init_raylib_window :: proc(cfg: ^Configs) {
     rl.SetConfigFlags(cfg.flags)
 
     rl.InitWindow(cfg.windowWidth, cfg.windowHeight, cfg.windowTitle)
-    rl.SetTargetFPS(cfg.targetFPS)
+
+    if cfg.targetFPS > 0 {
+        rl.SetTargetFPS(cfg.targetFPS)
+    }
 }
 
 //
