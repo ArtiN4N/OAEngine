@@ -168,7 +168,12 @@ main :: proc() {
                 } else {
                     append(&old_game_apis, game_api)
                     game_memory := game_api.memory()
+                    game_api.shutdown()
                     game_api = new_game_api
+
+                    
+                    game_api.init()
+
                     game_api.hot_reloaded(game_memory)
                 }
 
