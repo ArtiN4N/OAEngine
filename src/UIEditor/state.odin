@@ -84,8 +84,10 @@ game_init :: proc() {
 // destroy the state
 @(export)
 game_shutdown :: proc() {
+    for &form in state.uis {
+        OAE.destroy_uiform(form)
+    }
     delete(state.uis)
-    fmt.println("deleted ui dynamic array")
 
     free(state.memory)
 }

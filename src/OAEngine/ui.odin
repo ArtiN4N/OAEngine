@@ -1,6 +1,7 @@
 package OAEngine
 
 import "core:fmt"
+import math_bits "core:math/bits"
 import rl "vendor:raylib"
 
 
@@ -8,23 +9,49 @@ UITextInput :: struct {
     zindex: u32,
 }
 
+draw_uitextinput :: proc(textInp: UITextInput) {
+
+}
+
 UIImage :: struct {
     zindex: u32,
+}
+
+draw_uiimage :: proc(img: UIImage) {
+
 }
 
 UIShape :: struct {
     zindex: u32,
 }
 
+draw_uishape :: proc(shape: UIShape) {
+
+}
+
 UIButton :: struct {
     zindex: u32,
+}
+
+draw_uibutton :: proc(button: UIButton) {
+
 }
 
 UIText :: struct {
     zindex: u32,
 }
 
-UIInfo :: struct {
+draw_uitext :: proc(text: UIText) {
+
+}
+
+draw_uielement :: proc{
+    draw_uitext, draw_uibutton,
+    draw_uishape, draw_uiimage,
+    draw_uitextinput
+}
+
+UIForm :: struct {
     active: bool,
 
     // Whether the size, position is relative to its parent container
@@ -44,36 +71,47 @@ UIInfo :: struct {
     height: i32,
 
     color: rl.Color,
-}
 
-UIForm :: struct(T: int, B: int, S: int, I: int, TI: int) {
-    info: UIInfo,
-
-    texts: [T]UIText,
-    buttons: [B]UIButton,
-    shapes: [S]UIShape,
-    images: [I]UIImage,
-    textInputs: [TI]UITextInput,
+    elements: struct {
+        texts: [dynamic]UIText,
+        buttons: [dynamic]UIButton,
+        shapes: [dynamic]UIShape,
+        images: [dynamic]UIImage,
+        textInputs: [dynamic]UITextInput,
+    },
 }
 
 init_uiform :: proc(
     active: bool, 
     x: i32, y: i32, w: i32, h: i32, 
     c: rl.Color,
-    $T: int, $B: int, $S: int, $I: int, $TI: int
-) -> UIForm(T, B, S, I, TI) {
-    return UIForm(T, B, S, I, TI){
-        UIInfo{
-            active = active,
-            parent = {},
-            x = x, y = y, width = w, height = h, 
-            color = c,
-        },
-        {}, {}, {}, {}, {},
+    txtSize: int, btnSize: int, shpeSize: int, imgSize: int, txtInpSize: int
+) -> UIForm {
+    return UIForm{
+        active = active,
+        parent = {},
+        x = x, y = y, 
+        width = w, height = h, 
+        color = c,
+        elements = {
+            texts = make([dynamic]UIText, txtSize, txtSize),
+            buttons = make([dynamic]UIButton, btnSize, btnSize),
+            shapes = make([dynamic]UIShape, shpeSize, shpeSize),
+            images = make([dynamic]UIImage, imgSize, imgSize),
+            textInputs = make([dynamic]UITextInput, txtInpSize, txtInpSize),
+        }
     }
 }
 
-add_uiparent_from_form :: proc(form: ^UIInfo, rel: bool, parent: UIInfo) {
+destroy_uiform :: proc(form: ^UIForm) {
+    delete(form.elements.texts)
+    delete(form.elements.buttons)
+    delete(form.elements.shapes)
+    delete(form.elements.images)
+    delete(form.elements.textInputs)
+}
+
+add_uiparent_from_form :: proc(form: ^UIForm, rel: bool, parent: UIForm) {
     if !parent.parent.relative {
         form.parent = { rel, parent.x, parent.y, parent.width, parent.height }
         return
@@ -89,13 +127,13 @@ add_uiparent_from_form :: proc(form: ^UIInfo, rel: bool, parent: UIInfo) {
     form.parent = { rel, realX, realY, realW, realH }
 }
 
-add_uiparent_from_dimension :: proc(form: ^UIInfo, rel: bool, pX: i32, pY: i32, pW: i32, pH: i32) {
+add_uiparent_from_dimension :: proc(form: ^UIForm, rel: bool, pX: i32, pY: i32, pW: i32, pH: i32) {
     form.parent = { rel, pX, pY, pW, pH }
 }
 
 add_uiparent :: proc{ add_uiparent_from_form, add_uiparent_from_dimension }
 
-draw_uiform :: proc(form: UIForm($T, $B, $S, $I, $TI)) {
+draw_uiform :: proc(form: ^UIForm) {
 
     dX := form.x
     dY := form.y
@@ -115,32 +153,43 @@ draw_uiform :: proc(form: UIForm($T, $B, $S, $I, $TI)) {
     // loop through each array of ui elements.
     // we assume that each array is already sorted by zindex
     // continually grab the element with the lowest zindex and draw it
-    txtIndx, btnIndx, shpeIndx, imgIndx, txtInpIndx := 0
-    selected := &form.texts
+    txtIndx, btnIndx, shpeIndx, imgIndx, txtInpIndx := 0, 0, 0, 0, 0
     selectedIndx := &txtIndx
 
-    for i := 0; i < T + B + S + I + TI; i += 1 {
+    for i := 0; i < 
+    len(form.elements.texts) + len(form.elements.buttons) + 
+    len(form.elements.shapes) + len(form.elements.images) + 
+    len(form.elements.textInputs); 
+    i += 1 {
         // set lowestz to max value of u32
-        lowestz = 0 - 1
+        lowestz: u32 = math_bits.U32_MAX
         fmt.printfln("lowest = {0}", lowestz)
 
         lowestz = min(
-            form.texts[txtIndx].zindex, form.buttons[btnIndx].zindex, 
-            form.shapes[shpeIndx].zindex, form.images[imgIndx].zindex, 
-            form.textInputs[txtInpIndx].zindex
+            form.elements.texts[txtIndx].zindex, form.elements.buttons[btnIndx].zindex, 
+            form.elements.shapes[shpeIndx].zindex, form.elements.images[imgIndx].zindex, 
+            form.elements.textInputs[txtInpIndx].zindex
         )
 
-        selectedIndx, selected = &txtIndx, &form.texts if form.texts[txtIndx].zindex == lowestz else selectedIndx, selected
-        selectedIndx, selected = &btnIndx, &form.buttons if form.buttons[btnIndx].zindex == lowestz else selectedIndx, selected
-        selectedIndx, selected = &shpeIndx, &form.shapes if form.shapes[shpeIndx].zindex == lowestz else selectedIndx, selected
-        selectedIndx, selected = &imgIndx, &form.images if form.images[imgIndx].zindex == lowestz else selectedIndx, selected
-        selectedIndx, selected = &txtInpIndx, &form.textInputs if form.textInputs[txtInpIndx].zindex == lowestz else selectedIndx, selected
+        selectedIndx = &txtIndx if form.elements.texts[txtIndx].zindex == lowestz else selectedIndx
+        selectedIndx = &btnIndx if form.elements.buttons[btnIndx].zindex == lowestz else selectedIndx
+        selectedIndx = &shpeIndx if form.elements.shapes[shpeIndx].zindex == lowestz else selectedIndx
+        selectedIndx = &imgIndx if form.elements.images[imgIndx].zindex == lowestz else selectedIndx
+        selectedIndx = &txtInpIndx if form.elements.textInputs[txtInpIndx].zindex == lowestz else selectedIndx
 
-        draw_uielement(selected[selectedIndx])
-        selectedIndx += 1
-    }
-
-    for text in form.texts {
-        draw_uitext(text)
+        switch selectedIndx {
+            case &txtIndx:
+                draw_uielement(form.elements.texts[selectedIndx^])
+            case &btnIndx:
+                draw_uielement(form.elements.buttons[selectedIndx^])
+            case &shpeIndx:
+                draw_uielement(form.elements.shapes[selectedIndx^])
+            case &imgIndx:
+                draw_uielement(form.elements.images[selectedIndx^])
+            case &txtInpIndx:
+                draw_uielement(form.elements.textInputs[selectedIndx^])
+        }
+        
+        selectedIndx^ += 1
     }
 }
