@@ -6,7 +6,7 @@ import "core:log"
 import "core:os"
 
 // change path to whatever the name of the package you are trying to build
-import game "../MapEditor"
+import game "../UIEditor"
 
 UseTrackingAllocator :: #config(UseTrackingAllocator, false)
 
@@ -26,8 +26,8 @@ main :: proc() {
     logh, logh_err := os.open("log.txt", (os.O_CREATE | os.O_TRUNC | os.O_RDWR), mode)
 
     if logh_err == os.ERROR_NONE {
-        os.stdout = logh
-        os.stderr = logh
+        //os.stdout = logh
+        //os.stderr = logh
     }
 
     logger := logh_err == os.ERROR_NONE ? log.create_file_logger(logh) : log.create_console_logger()
