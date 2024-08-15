@@ -20,24 +20,31 @@ init_camera :: proc() -> Camera {
 }
 
 // moves cameras target to the follow vector pointer stored in the struct
-camera_update :: proc(using cam: ^Camera) {
-    view.target = rl.Vector2{ follow.x, follow.y }
+camera_update_follow :: proc(cam: ^Camera) {
+    if (!cam.following) { return }
+    cam.view.target = rl.Vector2{ cam.follow.x, cam.follow.y }
 }
+
+camera_update_no_follow :: proc(cam: ^Camera, x: f32, y: f32) {
+    cam.view.target = rl.Vector2{ x, y }
+}
+
+camera_update ::proc{ camera_update_follow, camera_update_no_follow }
 
 // changes the follow vector pointer
-set_camera_follow :: proc(using cam: ^Camera, target: ^rl.Vector2) {
-    follow = target
-    following = true
+set_camera_follow :: proc(cam: ^Camera, target: ^rl.Vector2) {
+    cam.follow = target
+    cam.following = true
 }
 
-set_camera_offset :: proc(using cam: ^Camera, offset: rl.Vector2) {
-    view.offset = offset
+set_camera_offset :: proc(cam: ^Camera, offset: rl.Vector2) {
+    cam.view.offset = offset
 }
 
-set_camera_rotation :: proc(using cam: ^Camera, rotation: f32) {
-    view.rotation = rotation
+set_camera_rotation :: proc(cam: ^Camera, rotation: f32) {
+    cam.view.rotation = rotation
 }
 
-set_camera_zoom :: proc(using cam: ^Camera, zoom: f32) {
-    view.zoom = zoom
+set_camera_zoom :: proc(cam: ^Camera, zoom: f32) {
+    cam.view.zoom = zoom
 }
