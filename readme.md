@@ -9,6 +9,7 @@
     - [x] bash scripts
     - [x] update game source code structure
 - [ ] UI editor
+<<<<<<< ours
     - [ ] z-index
     - [ ] fonts
     - [ ] text
@@ -19,6 +20,17 @@
             - [ ] delay
             - [ ] shake
     - [ ] button
+=======
+    - [x] z-index
+    - [ ] fonts
+    - [x] text
+        - [x] size
+        - [x] color
+        - [ ] animation
+            - [ ] delay
+            - [ ] shake
+    - [x] button
+>>>>>>> theirs
         - [ ] link button
         - [ ] checkbox
         - [ ] cycle button
