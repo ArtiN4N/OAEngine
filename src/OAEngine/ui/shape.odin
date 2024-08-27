@@ -4,8 +4,6 @@ import rl "vendor:raylib"
 import "core:fmt"
 import "core:strings"
 
-UIShapeType :: enum { RECTANGLE, CIRCLE, ELLIPSE, RING, TRIANGLE }
-
 UIRectangleData :: struct {
     width: f32,
     height: f32,
@@ -28,9 +26,46 @@ set_rectangle_boundingsize_absolute :: proc(data: UIRectangleData, bounding: ^UI
     bounding.height = data.height
 }
 
+draw_uishape_rectangle :: proc(shape: ^UIShape, data: UIRectangleData) {
+    set_boundingsize_absolute(data, &shape.boundingData.absolute)
+    shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
+
+    rect := get_rectangle_from_data(shape.boundingData.draw)
+
+    if data.rounded.active {
+        if shape.lines {
+            rl.DrawRectangleRoundedLines(
+                rect, data.rounded.roundness, data.rounded.segments, shape.lineThick, shape.color
+            )
+        } else {
+            rl.DrawRectangleRounded(rect, data.rounded.roundness, data.rounded.segments, shape.color)
+        }
+
+        return
+    }
+
+    if data.gradient.active {
+        rl.DrawRectangleGradientEx(
+            rect, data.gradient.vertex1, data.gradient.vertex2,
+            data.gradient.vertex3, data.gradient.vertex4
+        )
+
+        return
+    }
+
+    if shape.lines {
+        rl.DrawRectangleLinesEx(rect, shape.lineThick, shape.color)
+    } else {
+        rl.DrawRectangleRec(rect, shape.color)
+    }
+}
+
 UICircleData :: struct {
     radius: f32,
-    gradient: bool,
+    gradient: struct {
+        active: bool,
+        color2: rl.Color
+    },
     sector: struct {
         active: bool,
         startAngle: f32,
@@ -44,14 +79,73 @@ set_circle_boundingsize_absolute :: proc(data: UICircleData, bounding: ^UIData) 
     bounding.height = data.radius * 2.0
 }
 
+draw_uishape_circle :: proc(shape: ^UIShape, data: UICircleData) {
+    set_boundingsize_absolute(data, &shape.boundingData.absolute)
+    shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
+
+    center := get_posvector_from_data(shape.boundingData.draw)
+
+    if data.gradient.active {
+        rl.DrawCircleGradient(
+            i32(shape.boundingData.draw.x), i32(shape.boundingData.draw.y), data.radius,
+            shape.color, data.gradient.color2
+        )
+
+        return
+    }
+
+    if data.sector.active {
+        if shape.lines {
+            rl.DrawCircleSectorLines(
+                center, data.radius,
+                data.sector.startAngle, data.sector.endAngle, data.sector.segments,
+                shape.color
+            )
+        } else {
+            rl.DrawCircleSector(
+                center, data.radius,
+                data.sector.startAngle, data.sector.endAngle, data.sector.segments,
+                shape.color
+            )
+        }
+
+        return
+    }
+
+    if shape.lines {
+        rl.DrawCircleLinesV(center, data.radius, shape.color)
+    } else {
+        rl.DrawCircleV(center, data.radius, shape.color)
+    }
+}
+
 UIEllipseData :: struct {
-    radiusW: f32,
-    radiusH: f32
+    radiusHori: f32,
+    radiusVert: f32
 }
 
 set_ellipse_boundingsize_absolute :: proc(data: UIEllipseData, bounding: ^UIData) {
-    bounding.width = data.radiusW * 2.0
-    bounding.height = data.radiusH * 2.0
+    bounding.width = data.radiusHori * 2.0
+    bounding.height = data.radiusVert * 2.0
+}
+
+draw_uishape_ellipse :: proc(shape: ^UIShape, data: UIEllipseData) {
+    set_boundingsize_absolute(data, &shape.boundingData.absolute)
+    shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
+
+    if shape.lines {
+        rl.DrawEllipseLines(
+            i32(shape.boundingData.draw.x), i32(shape.boundingData.draw.y),
+            data.radiusHori, data.radiusVert,
+            shape.color
+        )
+    } else {
+        rl.DrawEllipse(
+            i32(shape.boundingData.draw.x), i32(shape.boundingData.draw.y),
+            data.radiusHori, data.radiusVert,
+            shape.color
+        )
+    }
 }
 
 UIRingData :: struct {
@@ -59,13 +153,35 @@ UIRingData :: struct {
     outerRadius: f32,
     startAngle: f32,
     endAngle: f32,
-    segments: int
+    segments: i32
 }
 
 set_ring_boundingsize_absolute :: proc(data: UIRingData, bounding: ^UIData) {
     bounding.width = data.outerRadius * 2.0
     bounding.height = data.outerRadius * 2.0
 }
+
+draw_uishape_ring :: proc(shape: ^UIShape, data: UIRingData) {
+    set_boundingsize_absolute(data, &shape.boundingData.absolute)
+    shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
+
+    center := get_posvector_from_data(shape.boundingData.draw)
+
+    if shape.lines {
+        rl.DrawRingLines(
+            center, data.innerRadius, data.outerRadius,
+            data.startAngle, data.endAngle, data.segments,
+            shape.color
+        )
+    } else {
+        rl.DrawRing(
+            center, data.innerRadius, data.outerRadius,
+            data.startAngle, data.endAngle, data.segments,
+            shape.color
+        )
+    }
+}
+
 
 // Vertexes are in counter-clockwise order.
 // The data in the vertex vectors are relative measurements.
@@ -85,54 +201,17 @@ get_trianglevertex_drawposition :: proc(vertex: rl.Vector2, drawBounding: UIData
     return
 }
 
-set_triangle_boundingsize_absolute :: proc(data: UITriangleData, bounding: ^UIData) {
-    // If the beginnning vertx is in the middle of the two others, on either axis,
-    // then that axis' size is the absolute sum of the differences between both vertexes
-    // and the beggining vertex, on said axis.
-    // Otherwise, the axis size is the absolute difference between the minimum and maximum vertex.
+draw_uishape_triangle :: proc(shape: ^UIShape, data: UITriangleData) {
+    shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
 
-    // First for width.
-    if data.vertex2.x - data.vertex1.x == 0 {
-        bounding.width = abs(data.vertex3.x - data.vertex1.x)
-    }
-    else if data.vertex3.x - data.vertex1.x == 0 {
-        bounding.width = abs(data.vertex2.x - data.vertex1.x)
-    }
-    else if
-        (data.vertex2.x - data.vertex1.x) / abs(data.vertex2.x - data.vertex1.x) !=
-        (data.vertex3.x - data.vertex1.x) / abs(data.vertex3.x - data.vertex1.x)
-    {
-        //hello 
-        // Vertexes are on either side of original vertex. Sum their distances.
-        bounding.width = abs(data.vertex2.x - data.vertex1.x) + abs(data.vertex3.x - data.vertex1.x)
-    }
-    else if abs(data.vertex2.x - data.vertex1.x) > abs(data.vertex3.x - data.vertex1.x) {
-        bounding.width = abs(data.vertex2.x - data.vertex1.x)
-    }
-    else {
-        bounding.width = abs(data.vertex3.x - data.vertex1.x)
-    }
+    drawVert1 := get_trianglevertex_drawposition(data.vertex1, shape.boundingData.draw)
+    drawVert2 := get_trianglevertex_drawposition(data.vertex2, shape.boundingData.draw)
+    drawVert3 := get_trianglevertex_drawposition(data.vertex3, shape.boundingData.draw)
 
-
-    // Then for height.
-    if data.vertex2.y - data.vertex1.y == 0 {
-        bounding.height = abs(data.vertex3.y - data.vertex1.y)
-    }
-    else if data.vertex3.y - data.vertex1.y == 0 {
-        bounding.height = abs(data.vertex2.y - data.vertex1.y)
-    }
-    else if
-        (data.vertex2.y - data.vertex1.y) / abs(data.vertex2.y - data.vertex1.y) !=
-        (data.vertex3.y - data.vertex1.y) / abs(data.vertex3.y - data.vertex1.y)
-    {
-        // Vertexes are on either side of original vertex. Sum their distances.
-        bounding.height = abs(data.vertex2.y - data.vertex1.y) + abs(data.vertex3.y - data.vertex1.y)
-    }
-    else if abs(data.vertex2.y - data.vertex1.y) > abs(data.vertex3.y - data.vertex1.y) {
-        bounding.height = abs(data.vertex2.y - data.vertex1.y)
-    }
-    else {
-        bounding.height = abs(data.vertex3.y - data.vertex1.y)
+    if shape.lines {
+        rl.DrawTriangleLines(drawVert1, drawVert2, drawVert3, shape.color)
+    } else {
+        rl.DrawTriangle(drawVert1, drawVert2, drawVert3, shape.color)
     }
 }
 
@@ -150,7 +229,6 @@ UIShape :: struct {
     boundingData: UIElementData,
     parentData: ^UIData,
 
-    shapeType: UIShapeType,
     shapeData: UIShapeData,
 
     lines: bool,
@@ -158,12 +236,56 @@ UIShape :: struct {
     color: rl.Color,
 }
 
+init_uishape :: proc(
+    zindex: u32,
+    relativeX, relativeY, relativeW, relativeH: f32,
+    parentData: ^UIData,
+    shapeData: UIShapeData,
+    lines: bool,
+    color: rl.Color,
+    lineThick: f32 = 1
+) -> (shape: UIShape) {
+    relativeData := UIData{ relativeX, relativeY, relativeW, relativeH }
+    absoluteData := get_absolute_data(relativeData, parentData)
+
+    switch v in shapeData {
+        case UIRectangleData:
+            set_boundingsize_absolute(v, &absoluteData)
+        case UICircleData:
+            set_boundingsize_absolute(v, &absoluteData)
+        case UIEllipseData:
+            set_boundingsize_absolute(v, &absoluteData)
+        case UIRingData:
+            set_boundingsize_absolute(v, &absoluteData)
+        case UITriangleData:
+    }
+
+    shape = UIShape{
+        zindex = zindex,
+
+        boundingData = UIElementData{
+            relative = relativeData,
+            absolute = absoluteData,
+            draw = get_draw_data(absoluteData, parentData)
+        },
+        parentData = parentData,
+
+        shapeData = shapeData,
+
+        lines = lines,
+        lineThick = lineThick,
+        color = color
+    }
+
+
+    return
+}
+
 set_boundingsize_absolute :: proc {
     set_rectangle_boundingsize_absolute,
     set_circle_boundingsize_absolute,
     set_ellipse_boundingsize_absolute,
     set_ring_boundingsize_absolute,
-    set_triangle_boundingsize_absolute,
 }
 
 draw_uishape :: proc(shape: ^UIShape) {
@@ -171,52 +293,14 @@ draw_uishape :: proc(shape: ^UIShape) {
 
     switch v in shape.shapeData {
         case UIRectangleData:
-            set_boundingsize_absolute(v, &shape.boundingData.absolute)
-            shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
-
-            rect := get_rectangle_from_data(shape.boundingData.draw)
-
-            if v.rounded.active {
-                if shape.lines {
-                    rl.DrawRectangleRoundedLines(rect, v.rounded.roundness, v.rounded.segments, shape.lineThick, shape.color)
-                } else {
-                    rl.DrawRectangleRounded(rect, v.rounded.roundness, v.rounded.segments, shape.color)
-                }
-
-                return
-            }
-
-            if v.gradient.active {
-                rl.DrawRectangleGradientEx(rect, v.gradient.vertex1, v.gradient.vertex2, v.gradient.vertex3, v.gradient.vertex4)
-            }
-
-            if shape.lines {
-                rl.DrawRectangleLinesEx(rect, shape.lineThick, shape.color)
-            } else {
-                rl.DrawRectangleRec(rect, shape.color)
-            }
-
+            draw_uishape_rectangle(shape, v)
         case UICircleData:
-            set_boundingsize_absolute(v, &shape.boundingData.absolute)
-            shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
+            draw_uishape_circle(shape, v)
         case UIEllipseData:
-            set_boundingsize_absolute(v, &shape.boundingData.absolute)
-            shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
+            draw_uishape_ellipse(shape, v)
         case UIRingData:
-            set_boundingsize_absolute(v, &shape.boundingData.absolute)
-            shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
+            draw_uishape_ring(shape, v)
         case UITriangleData:
-            shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
-
-            drawVert1 := get_trianglevertex_drawposition(v.vertex1, shape.boundingData.draw)
-            drawVert2 := get_trianglevertex_drawposition(v.vertex2, shape.boundingData.draw)
-            drawVert3 := get_trianglevertex_drawposition(v.vertex3, shape.boundingData.draw)
-
-            if shape.lines {
-                rl.DrawTriangleLines(drawVert1, drawVert2, drawVert3, shape.color)
-            } else {
-                rl.DrawTriangle(drawVert1, drawVert2, drawVert3, shape.color)
-            }
-
+            draw_uishape_triangle(shape, v)
     }
 }
