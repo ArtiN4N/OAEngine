@@ -21,6 +21,41 @@ UIRectangleData :: struct {
     }
 }
 
+init_uishapedata_rectangle :: proc(
+    width: f32,
+    height: f32,
+
+    rounded: bool = false,
+    roundness: f32 = 0,
+    segments: i32 = 1,
+
+    gradient: bool = false,
+    vertex1: rl.Color = rl.WHITE,
+    vertex2: rl.Color = rl.WHITE,
+    vertex3: rl.Color = rl.WHITE,
+    vertex4: rl.Color = rl.WHITE
+) -> (data: UIRectangleData) {
+    data = UIRectangleData{
+        width = width,
+        height = height,
+
+        rounded = {
+            active = rounded,
+            roundness = roundness,
+            segments = segments
+        },
+        gradient = {
+            active = gradient,
+            vertex1 = vertex1,
+            vertex2 = vertex2,
+            vertex3 = vertex3,
+            vertex4 = vertex4
+        }
+    }
+
+    return
+}
+
 set_rectangle_boundingsize_absolute :: proc(data: UIRectangleData, bounding: ^UIData) {
     bounding.width = data.width
     bounding.height = data.height
@@ -74,6 +109,34 @@ UICircleData :: struct {
     }
 }
 
+init_uishapedata_circle :: proc(
+    radius: f32,
+
+    gradient: bool = false,
+    color2: rl.Color = rl.WHITE,
+
+    sector: bool = false,
+    startAngle: f32 = 0,
+    endAngle: f32 = 0,
+    segments: i32 = 1
+) -> (data: UICircleData) {
+    data = UICircleData{
+        radius = radius,
+        gradient = {
+            active = gradient,
+            color2 = color2
+        },
+        sector = {
+            active = sector,
+            startAngle = startAngle,
+            endAngle = endAngle,
+            segments = segments
+        }
+    }
+
+    return
+}
+
 set_circle_boundingsize_absolute :: proc(data: UICircleData, bounding: ^UIData) {
     bounding.width = data.radius * 2.0
     bounding.height = data.radius * 2.0
@@ -124,6 +187,18 @@ UIEllipseData :: struct {
     radiusVert: f32
 }
 
+init_uishapedata_ellipse :: proc(
+    radiusHori: f32,
+    radiusVert: f32
+) -> (data: UIEllipseData) {
+    data = UIEllipseData{
+        radiusHori = radiusHori,
+        radiusVert = radiusVert
+    }
+
+    return
+}
+
 set_ellipse_boundingsize_absolute :: proc(data: UIEllipseData, bounding: ^UIData) {
     bounding.width = data.radiusHori * 2.0
     bounding.height = data.radiusVert * 2.0
@@ -154,6 +229,24 @@ UIRingData :: struct {
     startAngle: f32,
     endAngle: f32,
     segments: i32
+}
+
+init_uishapedata_ring :: proc(
+    innerRadius: f32,
+    outerRadius: f32,
+    startAngle: f32,
+    endAngle: f32,
+    segments: i32
+) -> (data: UIRingData) {
+    data = UIRingData{
+        innerRadius = innerRadius,
+        outerRadius = outerRadius,
+        startAngle = startAngle,
+        endAngle = endAngle,
+        segments = segments
+    }
+
+    return
 }
 
 set_ring_boundingsize_absolute :: proc(data: UIRingData, bounding: ^UIData) {
@@ -190,6 +283,20 @@ UITriangleData :: struct {
     vertex1: rl.Vector2,
     vertex2: rl.Vector2,
     vertex3: rl.Vector2
+}
+
+init_uishapedata_triangle :: proc(
+    vertex1: rl.Vector2,
+    vertex2: rl.Vector2,
+    vertex3: rl.Vector2
+) -> (data: UITriangleData) {
+    data = UITriangleData{
+        vertex1 = vertex1,
+        vertex2 = vertex2,
+        vertex3 = vertex3
+    }
+
+    return
 }
 
 get_trianglevertex_drawposition :: proc(vertex: rl.Vector2, drawBounding: UIData) -> (position: rl.Vector2) {
@@ -276,7 +383,6 @@ init_uishape :: proc(
         lineThick = lineThick,
         color = color
     }
-
 
     return
 }
