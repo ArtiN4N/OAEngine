@@ -162,7 +162,7 @@ draw_uiform :: proc(form: ^UIForm) {
             case &btnIndx:
                 draw_uielement(&btns[selectedIndx^])
             case &shpIndx:
-                //draw_uielement(&shps[selectedIndx^])
+                draw_uielement(&shps[selectedIndx^])
             case &imgIndx:
                 //draw_uielement(&imgs[selectedIndx^])
             case &tInIndx:

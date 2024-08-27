@@ -103,6 +103,12 @@ generate_testform :: proc(form: ^OAU.UIForm) {
         labelColor = rl.WHITE
     )
 
+    triData := OAU.init_uishapedata_triangle(
+        {0, 0}, {0.5, 0.9}, {0.8, 0.5}
+    )
+    triangle := OAU.init_uishape(3, 0.2, -0.3, 0.3, 0.2, &form.data.absolute, triData, false, rl.RED)
+    OAU.add_to_uiform(form, triangle)
+
     return
 }
 

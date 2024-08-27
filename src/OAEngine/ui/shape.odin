@@ -315,6 +315,12 @@ draw_uishape_triangle :: proc(shape: ^UIShape, data: UITriangleData) {
     drawVert2 := get_trianglevertex_drawposition(data.vertex2, shape.boundingData.draw)
     drawVert3 := get_trianglevertex_drawposition(data.vertex3, shape.boundingData.draw)
 
+    /*rl.DrawRectangle(
+        i32(shape.boundingData.draw.x), i32(shape.boundingData.draw.y),
+        i32(shape.boundingData.draw.width), i32(shape.boundingData.draw.height),
+        rl.BLACK
+    )*/
+
     if shape.lines {
         rl.DrawTriangleLines(drawVert1, drawVert2, drawVert3, shape.color)
     } else {
