@@ -64,11 +64,11 @@ generate_testform :: proc(form: ^OAU.UIForm) {
     text1 := OAU.init_uitext(
         zindex = 2,
         relativeX = 0.0,
-        relativeY = 0.0,
+        relativeY = 0.4,
         relativeW = 0.5,
         relativeH = 0.5,
         parentData = &form.data.absolute,
-        content = "test content %v",
+        content = "bottom text = %v",
         textFormat = &state.counter,
         fontsize = 20,
         fontSpacing = 5,
@@ -78,8 +78,8 @@ generate_testform :: proc(form: ^OAU.UIForm) {
 
     button1 := OAU.init_uibutton(
         zindex = 1,
-        relativeX = -0.15,
-        relativeY = 0.0,
+        relativeX = 0,
+        relativeY = 0,
         relativeW = 0.333,
         relativeH = 0.1,
         parentData = &form.data.absolute,
@@ -103,11 +103,25 @@ generate_testform :: proc(form: ^OAU.UIForm) {
         labelColor = rl.WHITE
     )
 
+    rectData := OAU.init_uishapedata_rectangle()
+    rectangle := OAU.init_uishape(3, -0.45, -0.45, 0.1, 0.1, &form.data.absolute, rectData, false, rl.RED)
+
+    circData := OAU.init_uishapedata_circle()
+    circle := OAU.init_uishape(4, -0.15, -0.45, 0.1, 0, &form.data.absolute, circData, false, rl.GREEN)
+
+    ellData := OAU.init_uishapedata_ellipse()
+    ellipse := OAU.init_uishape(4, -0.3, -0.45, 0.15, 0.1, &form.data.absolute, ellData, false, rl.PURPLE)
+
+    ringData := OAU.init_uishapedata_ring(0.5, 0, 360, 50)
+    ring := OAU.init_uishape(4, 0, -0.45, 0.1, 0, &form.data.absolute, ringData, false, rl.BLUE)
+
     triData := OAU.init_uishapedata_triangle(
-        {0, 0}, {0.5, 0.9}, {0.8, 0.5}
+        {0.5, 0.1}, {0, 0.8}, {0.9, 1}
     )
-    triangle := OAU.init_uishape(3, 0.2, -0.3, 0.3, 0.2, &form.data.absolute, triData, false, rl.RED)
-    OAU.add_to_uiform(form, triangle)
+    triangle := OAU.init_uishape(3, 0.15, -0.45, 0.1, 0.1, &form.data.absolute, triData, false, rl.RED)
+
+
+    OAU.add_to_uiform(form, triangle, rectangle, circle, ellipse, ring)
 
     return
 }

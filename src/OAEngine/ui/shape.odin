@@ -5,8 +5,6 @@ import "core:fmt"
 import "core:strings"
 
 UIRectangleData :: struct {
-    width: f32,
-    height: f32,
     rounded: struct {
         active: bool,
         roundness: f32,
@@ -22,9 +20,6 @@ UIRectangleData :: struct {
 }
 
 init_uishapedata_rectangle :: proc(
-    width: f32,
-    height: f32,
-
     rounded: bool = false,
     roundness: f32 = 0,
     segments: i32 = 1,
@@ -36,9 +31,6 @@ init_uishapedata_rectangle :: proc(
     vertex4: rl.Color = rl.WHITE
 ) -> (data: UIRectangleData) {
     data = UIRectangleData{
-        width = width,
-        height = height,
-
         rounded = {
             active = rounded,
             roundness = roundness,
@@ -56,13 +48,7 @@ init_uishapedata_rectangle :: proc(
     return
 }
 
-set_rectangle_boundingsize_absolute :: proc(data: UIRectangleData, bounding: ^UIData) {
-    bounding.width = data.width
-    bounding.height = data.height
-}
-
 draw_uishape_rectangle :: proc(shape: ^UIShape, data: UIRectangleData) {
-    set_boundingsize_absolute(data, &shape.boundingData.absolute)
     shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
 
     rect := get_rectangle_from_data(shape.boundingData.draw)
@@ -96,7 +82,6 @@ draw_uishape_rectangle :: proc(shape: ^UIShape, data: UIRectangleData) {
 }
 
 UICircleData :: struct {
-    radius: f32,
     gradient: struct {
         active: bool,
         color2: rl.Color
@@ -110,8 +95,6 @@ UICircleData :: struct {
 }
 
 init_uishapedata_circle :: proc(
-    radius: f32,
-
     gradient: bool = false,
     color2: rl.Color = rl.WHITE,
 
@@ -121,7 +104,6 @@ init_uishapedata_circle :: proc(
     segments: i32 = 1
 ) -> (data: UICircleData) {
     data = UICircleData{
-        radius = radius,
         gradient = {
             active = gradient,
             color2 = color2
@@ -137,20 +119,14 @@ init_uishapedata_circle :: proc(
     return
 }
 
-set_circle_boundingsize_absolute :: proc(data: UICircleData, bounding: ^UIData) {
-    bounding.width = data.radius * 2.0
-    bounding.height = data.radius * 2.0
-}
-
 draw_uishape_circle :: proc(shape: ^UIShape, data: UICircleData) {
-    set_boundingsize_absolute(data, &shape.boundingData.absolute)
-    shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
-
-    center := get_posvector_from_data(shape.boundingData.draw)
+    // No need to calculate draw data, since circles are drawn with their center already
+    center := get_posvector_from_data(shape.boundingData.absolute)
+    radius := shape.boundingData.draw.width / 2
 
     if data.gradient.active {
         rl.DrawCircleGradient(
-            i32(shape.boundingData.draw.x), i32(shape.boundingData.draw.y), data.radius,
+            i32(shape.boundingData.absolute.x), i32(shape.boundingData.absolute.y), radius,
             shape.color, data.gradient.color2
         )
 
@@ -160,13 +136,13 @@ draw_uishape_circle :: proc(shape: ^UIShape, data: UICircleData) {
     if data.sector.active {
         if shape.lines {
             rl.DrawCircleSectorLines(
-                center, data.radius,
+                center, radius,
                 data.sector.startAngle, data.sector.endAngle, data.sector.segments,
                 shape.color
             )
         } else {
             rl.DrawCircleSector(
-                center, data.radius,
+                center, radius,
                 data.sector.startAngle, data.sector.endAngle, data.sector.segments,
                 shape.color
             )
@@ -176,56 +152,44 @@ draw_uishape_circle :: proc(shape: ^UIShape, data: UICircleData) {
     }
 
     if shape.lines {
-        rl.DrawCircleLinesV(center, data.radius, shape.color)
+        rl.DrawCircleLinesV(center, radius, shape.color)
     } else {
-        rl.DrawCircleV(center, data.radius, shape.color)
+        rl.DrawCircleV(center, radius, shape.color)
     }
 }
 
-UIEllipseData :: struct {
-    radiusHori: f32,
-    radiusVert: f32
-}
+UIEllipseData :: struct {}
 
-init_uishapedata_ellipse :: proc(
-    radiusHori: f32,
-    radiusVert: f32
-) -> (data: UIEllipseData) {
-    data = UIEllipseData{
-        radiusHori = radiusHori,
-        radiusVert = radiusVert
-    }
+init_uishapedata_ellipse :: proc() -> (data: UIEllipseData) {
+    data = UIEllipseData{}
 
     return
 }
 
-set_ellipse_boundingsize_absolute :: proc(data: UIEllipseData, bounding: ^UIData) {
-    bounding.width = data.radiusHori * 2.0
-    bounding.height = data.radiusVert * 2.0
-}
-
 draw_uishape_ellipse :: proc(shape: ^UIShape, data: UIEllipseData) {
-    set_boundingsize_absolute(data, &shape.boundingData.absolute)
-    shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
+    // No need to calculate draw data, since circles are drawn with their center already
+    radiusHori := shape.boundingData.absolute.width / 2
+    radiusVert := shape.boundingData.absolute.height / 2
 
     if shape.lines {
         rl.DrawEllipseLines(
-            i32(shape.boundingData.draw.x), i32(shape.boundingData.draw.y),
-            data.radiusHori, data.radiusVert,
+            i32(shape.boundingData.absolute.x), i32(shape.boundingData.absolute.y),
+            radiusHori, radiusVert,
             shape.color
         )
     } else {
         rl.DrawEllipse(
-            i32(shape.boundingData.draw.x), i32(shape.boundingData.draw.y),
-            data.radiusHori, data.radiusVert,
+            i32(shape.boundingData.absolute.x), i32(shape.boundingData.absolute.y),
+            radiusHori, radiusVert,
             shape.color
         )
     }
 }
 
+// Note that the innerradius is a number from 0 to 1, that represents the relative portion of the inner circle.
+// Meaning that, a value of 1 means the inner radius is equal to the outer radius, and 0 means there is no inner radius.
 UIRingData :: struct {
     innerRadius: f32,
-    outerRadius: f32,
     startAngle: f32,
     endAngle: f32,
     segments: i32
@@ -233,14 +197,12 @@ UIRingData :: struct {
 
 init_uishapedata_ring :: proc(
     innerRadius: f32,
-    outerRadius: f32,
     startAngle: f32,
     endAngle: f32,
     segments: i32
 ) -> (data: UIRingData) {
     data = UIRingData{
         innerRadius = innerRadius,
-        outerRadius = outerRadius,
         startAngle = startAngle,
         endAngle = endAngle,
         segments = segments
@@ -249,26 +211,27 @@ init_uishapedata_ring :: proc(
     return
 }
 
-set_ring_boundingsize_absolute :: proc(data: UIRingData, bounding: ^UIData) {
-    bounding.width = data.outerRadius * 2.0
-    bounding.height = data.outerRadius * 2.0
+get_ring_innerradius_drawposition :: proc(radius: f32, drawBounding: UIData) -> (inner: f32) {
+    inner = radius * (drawBounding.width / 2)
+
+    return
 }
 
 draw_uishape_ring :: proc(shape: ^UIShape, data: UIRingData) {
-    set_boundingsize_absolute(data, &shape.boundingData.absolute)
-    shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
-
-    center := get_posvector_from_data(shape.boundingData.draw)
+    // No need to calculate draw data, since circles are drawn with their center already
+    center := get_posvector_from_data(shape.boundingData.absolute)
+    outerRadius := shape.boundingData.absolute.width / 2
+    innerRadius := get_ring_innerradius_drawposition(data.innerRadius, shape.boundingData.absolute)
 
     if shape.lines {
         rl.DrawRingLines(
-            center, data.innerRadius, data.outerRadius,
+            center, innerRadius, outerRadius,
             data.startAngle, data.endAngle, data.segments,
             shape.color
         )
     } else {
         rl.DrawRing(
-            center, data.innerRadius, data.outerRadius,
+            center, innerRadius, outerRadius,
             data.startAngle, data.endAngle, data.segments,
             shape.color
         )
@@ -361,18 +324,6 @@ init_uishape :: proc(
     relativeData := UIData{ relativeX, relativeY, relativeW, relativeH }
     absoluteData := get_absolute_data(relativeData, parentData)
 
-    switch v in shapeData {
-        case UIRectangleData:
-            set_boundingsize_absolute(v, &absoluteData)
-        case UICircleData:
-            set_boundingsize_absolute(v, &absoluteData)
-        case UIEllipseData:
-            set_boundingsize_absolute(v, &absoluteData)
-        case UIRingData:
-            set_boundingsize_absolute(v, &absoluteData)
-        case UITriangleData:
-    }
-
     shape = UIShape{
         zindex = zindex,
 
@@ -391,13 +342,6 @@ init_uishape :: proc(
     }
 
     return
-}
-
-set_boundingsize_absolute :: proc {
-    set_rectangle_boundingsize_absolute,
-    set_circle_boundingsize_absolute,
-    set_ellipse_boundingsize_absolute,
-    set_ring_boundingsize_absolute,
 }
 
 draw_uishape :: proc(shape: ^UIShape) {
