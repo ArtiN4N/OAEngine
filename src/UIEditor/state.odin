@@ -34,6 +34,23 @@ update :: proc(state: ^State) {
         state.cfg.windowHeight = rl.GetScreenHeight();
         state.formParent = { 0.0, 0.0, f32(state.cfg.windowWidth), f32(state.cfg.windowHeight) }
     }
+
+    mousePosition := rl.GetMousePosition()
+
+    // Do input handling for ui forms
+    if rl.IsMouseButtonReleased(.LEFT) {
+        for _, &form in state.uis {
+            if !form.active {
+                continue
+            }
+
+            for button in form.buttons {
+                if rl.CheckCollisionPointRec(mousePosition, OAU.get_rectangle_from_data(button.data.draw)) {
+                    button.callback()
+                }
+            }
+        }
+    }
 }
 
 draw :: proc(state: ^State) {
@@ -76,6 +93,9 @@ generate_testform :: proc(form: ^OAU.UIForm) {
     )
     OAU.add_to_uiform(form, text1)
 
+    button1callback :: proc() {
+        fmt.printfln("state counter = {0}", state.counter)
+    }
     button1 := OAU.init_uibutton(
         zindex = 1,
         relativeX = 0,
@@ -84,6 +104,7 @@ generate_testform :: proc(form: ^OAU.UIForm) {
         relativeH = 0.1,
         parentData = &form.data.absolute,
         color = rl.DARKBLUE,
+        callback = button1callback
     )
 
     // Must append it to buttons array and use pointer from said array.

@@ -16,13 +16,17 @@ UIButton :: struct {
     // The optional text. Since the text doesnt exist in memory,
     // instead of having the option of it just not existing, the text should be set to an empty string.
     label: UIText,
+
+    // The callback function, that serves as the button's functionality
+    callback: proc(),
 }
 
 init_uibutton :: proc(
     zindex: u32,
     relativeX, relativeY, relativeW, relativeH: f32,
     parentData: ^UIData,
-    color: rl.Color
+    color: rl.Color,
+    callback: proc()
 ) -> (button: UIButton) {
     relativeData := UIData{ relativeX, relativeY, relativeW, relativeH }
     absoluteData := get_absolute_data(relativeData, parentData)
@@ -40,6 +44,8 @@ init_uibutton :: proc(
         color = color,
 
         label = UIText{},
+
+        callback = callback
     }
 
     return
