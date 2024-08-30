@@ -5,6 +5,7 @@ import "core:fmt"
 import "core:strings"
 
 UIRectangleData :: struct {
+    square: bool,
     rounded: struct {
         active: bool,
         roundness: f32,
@@ -20,6 +21,7 @@ UIRectangleData :: struct {
 }
 
 init_uishapedata_rectangle :: proc(
+    square: bool = false,
     rounded: bool = false,
     roundness: f32 = 0,
     segments: i32 = 1,
@@ -31,6 +33,7 @@ init_uishapedata_rectangle :: proc(
     vertex4: rl.Color = rl.WHITE
 ) -> (data: UIRectangleData) {
     data = UIRectangleData{
+        square = square,
         rounded = {
             active = rounded,
             roundness = roundness,
@@ -50,6 +53,14 @@ init_uishapedata_rectangle :: proc(
 
 draw_uishape_rectangle :: proc(shape: ^UIShape, data: UIRectangleData) {
     shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
+
+    if data.square {
+        if shape.boundingData.draw.width > shape.boundingData.draw.height {
+            shape.boundingData.draw.width = shape.boundingData.draw.height
+        } else if shape.boundingData.draw.width < shape.boundingData.draw.height {
+            shape.boundingData.draw.height = shape.boundingData.draw.width
+        }
+    }
 
     rect := get_rectangle_from_data(shape.boundingData.draw)
 

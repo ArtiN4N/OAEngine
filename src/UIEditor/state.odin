@@ -76,7 +76,7 @@ generate_testform :: proc(form: ^OAU.UIForm) {
         relativeH = 0.9,
         parentData = &state.formParent,
         color = rl.WHITE,
-        square = true,
+        square = false,
     )
 
     text1 := OAU.init_uitext_relative(
@@ -143,7 +143,7 @@ generate_testform :: proc(form: ^OAU.UIForm) {
         labelColor = rl.WHITE
     )
 
-    rectData := OAU.init_uishapedata_rectangle()
+    rectData := OAU.init_uishapedata_rectangle(square = true)
     rectangle := OAU.init_uishape_relative(3, -0.45, -0.45, 0.1, 0.1, &form.data.absolute, rectData, false, rl.RED)
 
     circData := OAU.init_uishapedata_circle()
