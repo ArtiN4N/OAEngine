@@ -122,7 +122,7 @@ init_uishapedata_circle :: proc(
 draw_uishape_circle :: proc(shape: ^UIShape, data: UICircleData) {
     // No need to calculate draw data, since circles are drawn with their center already
     center := get_posvector_from_data(shape.boundingData.absolute)
-    radius := shape.boundingData.draw.width / 2
+    radius := shape.boundingData.absolute.width / 2
 
     if data.gradient.active {
         rl.DrawCircleGradient(

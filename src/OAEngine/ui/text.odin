@@ -118,6 +118,15 @@ draw_uitext :: proc(text: ^UIText) {
             cstr = fmt.caprintf(text.content, v^)
     }
 
+    // Update the absolute and for-drawing data for the element.
+    if text.data.useAbs {
+        absData := text.data.absolute
+        text.data.absolute = get_absolute_data(text.data.relative, text.parentData)
+        text.data.absolute = UIData{ text.data.absolute.x, text.data.absolute.y, absData.width, absData.height }
+    } else {
+        text.data.absolute = get_absolute_data(text.data.relative, text.parentData)
+    }
+
     // A fontsize of 0 indicates that the user wants to use their provided height for the text,
     // as the fontsize used to draw.
     fontsize := f32(text.data.absolute.height)
@@ -127,15 +136,6 @@ draw_uitext :: proc(text: ^UIText) {
 
     // get the size of the text field for position calculations
     realSize := rl.MeasureTextEx(get_fontdata(text.font), cstr, fontsize, text.fontSpacing)
-
-    // Update the absolute and for-drawing data for the element.
-    if text.data.useAbs {
-        absData := text.data.absolute
-        text.data.absolute = get_absolute_data(text.data.relative, text.parentData)
-        text.data.absolute = UIData{ text.data.absolute.x, text.data.absolute.y, absData.width, absData.height }
-    } else {
-        text.data.absolute = get_absolute_data(text.data.relative, text.parentData)
-    }
 
     text.data.absolute.width  = realSize.x
     text.data.absolute.height = realSize.y

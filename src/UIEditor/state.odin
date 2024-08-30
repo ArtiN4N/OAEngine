@@ -76,6 +76,7 @@ generate_testform :: proc(form: ^OAU.UIForm) {
         relativeH = 0.9,
         parentData = &state.formParent,
         color = rl.WHITE,
+        square = true,
     )
 
     text1 := OAU.init_uitext_relative(
@@ -113,12 +114,12 @@ generate_testform :: proc(form: ^OAU.UIForm) {
         return rl.ColorBrightness(color, factor)
     }
 
-    button1 := OAU.init_uibutton_absolute_size(
+    button1 := OAU.init_uibutton_relative(
         zindex = 1,
         relativeX = 0,
         relativeY = 0,
-        absoluteW = 200,
-        absoluteH = 100,
+        relativeW = 0.2,
+        relativeH = 0.1,
         parentData = &form.data.absolute,
         color = rl.DARKBLUE,
         callback = button1callback,
@@ -133,11 +134,11 @@ generate_testform :: proc(form: ^OAU.UIForm) {
         labelZindex = 0,
         labelRelativeX = 0.0,
         labelRelativeY = 0.0,
-        labelRelativeW = 0.1,
-        labelRelativeH = 0.2,
+        labelRelativeW = 1,
+        labelRelativeH = 0.3,
         labelContent = "button",
         labelTextFormat = false,
-        labelFontsize = 30,
+        labelFontsize = 0,
         labelFontSpacing = 3,
         labelColor = rl.WHITE
     )
@@ -173,7 +174,7 @@ game_init :: proc() {
     state.counter = 10
 
     state.cfg.windowWidth = 800
-    state.cfg.windowHeight = 800
+    state.cfg.windowHeight = 400
     state.cfg.windowTitle = "Game Title"
 
     state.cfg.targetFPS = 30
