@@ -24,6 +24,7 @@ UIElementData :: struct {
     relative: UIData,
     absolute: UIData,
     draw: UIData,
+    useAbs: bool
 }
 
 // UI forms are relative to the window.
@@ -49,7 +50,7 @@ UIForm :: struct {
     textInputs: [dynamic]UITextInput,
 }
 
-init_uiform :: proc(
+init_uiform_relative :: proc(
     relativeX, relativeY, relativeW, relativeH: f32,
     parentData: ^UIFormParent,
     color: rl.Color,
@@ -63,7 +64,40 @@ init_uiform :: proc(
         data = UIElementData{
             relative = relativeData,
             absolute = absoluteData,
-            draw = get_draw_data(absoluteData, parentData)
+            draw = get_draw_data(absoluteData, parentData),
+            useAbs = false
+        },
+        parentData = parentData,
+        color = color,
+        texts = make([dynamic]UIText),
+        buttons = make([dynamic]UIButton),
+        shapes = make([dynamic]UIShape),
+        images = make([dynamic]UIImage),
+        textInputs = make([dynamic]UITextInput),
+    }
+
+    return
+}
+
+
+init_uiform_absolute_size :: proc(
+    relativeX, relativeY: f32,
+    absoluteW, absoluteH: f32,
+    parentData: ^UIFormParent,
+    color: rl.Color,
+) -> (form: UIForm) {
+    relativeData := UIData{ relativeX, relativeY, 0, 0 }
+    absoluteData := get_absolute_data(relativeData, parentData)
+    absoluteData = UIData{ absoluteData.x, absoluteData.y, absoluteW, absoluteH }
+
+    form = UIForm{
+        active = false,
+
+        data = UIElementData{
+            relative = relativeData,
+            absolute = absoluteData,
+            draw = get_draw_data(absoluteData, parentData),
+            useAbs = true
         },
         parentData = parentData,
         color = color,
@@ -114,7 +148,13 @@ delete_uiform :: proc(form: ^UIForm) {
 }
 
 draw_uiform :: proc(form: ^UIForm) {
-    form.data.absolute = get_absolute_data(form.data.relative, form.parentData)
+    if form.data.useAbs {
+        absData := form.data.absolute
+        form.data.absolute = get_absolute_data(form.data.relative, form.parentData)
+        form.data.absolute = UIData{ form.data.absolute.x, form.data.absolute.y, absData.width, absData.height }
+    } else {
+        form.data.absolute = get_absolute_data(form.data.relative, form.parentData)
+    }
     form.data.draw = get_draw_data(form.data.absolute, form.parentData)
 
     rl.DrawRectangleV(

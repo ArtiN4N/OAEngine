@@ -16,11 +16,13 @@ State :: struct {
     // Used for ui forms.
     formParent: OAU.UIFormParent,
 
-    // for simple testing
+    // for simple testing.
     counter: int
 }
 
 update :: proc(state: ^State) {
+    mousePosition := rl.GetMousePosition()
+
     if rl.IsKeyPressed(.Q) {
         form := &state.uis["testform"]
         form.active = !form.active
@@ -34,8 +36,6 @@ update :: proc(state: ^State) {
         state.cfg.windowHeight = rl.GetScreenHeight();
         state.formParent = { 0.0, 0.0, f32(state.cfg.windowWidth), f32(state.cfg.windowHeight) }
     }
-
-    mousePosition := rl.GetMousePosition()
 
     // Do input handling for ui forms
     if rl.IsMouseButtonReleased(.LEFT) {
@@ -69,7 +69,7 @@ draw :: proc(state: ^State) {
 }
 
 generate_testform :: proc(form: ^OAU.UIForm) {
-    form^ = OAU.init_uiform(
+    form^ = OAU.init_uiform_relative(
         relativeX = 0.0,
         relativeY = 0.0,
         relativeW = 0.9,
@@ -78,7 +78,7 @@ generate_testform :: proc(form: ^OAU.UIForm) {
         color = rl.WHITE,
     )
 
-    text1 := OAU.init_uitext(
+    text1 := OAU.init_uitext_relative(
         zindex = 2,
         relativeX = 0.0,
         relativeY = 0.4,
@@ -94,17 +94,35 @@ generate_testform :: proc(form: ^OAU.UIForm) {
     OAU.add_to_uiform(form, text1)
 
     button1callback :: proc() {
-        fmt.printfln("state counter = {0}", state.counter)
+        form := &state.uis["testform"]
+        form.shapes[1].color = rl.BLACK
     }
-    button1 := OAU.init_uibutton(
+
+    button1mousedown :: proc(color: rl.Color, framesSinceRelease: int) -> rl.Color {
+        startFactor: f32 = -0.3
+        endFactor: f32 = 0
+        frameDuration := 10
+
+        if framesSinceRelease > frameDuration {
+            return color
+        }
+
+        // y = mx+b
+        factor := f32(framesSinceRelease) * (startFactor - endFactor) / f32(-frameDuration) + startFactor
+
+        return rl.ColorBrightness(color, factor)
+    }
+
+    button1 := OAU.init_uibutton_absolute_size(
         zindex = 1,
         relativeX = 0,
         relativeY = 0,
-        relativeW = 0.333,
-        relativeH = 0.1,
+        absoluteW = 200,
+        absoluteH = 100,
         parentData = &form.data.absolute,
         color = rl.DARKBLUE,
-        callback = button1callback
+        callback = button1callback,
+        mousedown = button1mousedown
     )
 
     // Must append it to buttons array and use pointer from said array.
@@ -115,31 +133,31 @@ generate_testform :: proc(form: ^OAU.UIForm) {
         labelZindex = 0,
         labelRelativeX = 0.0,
         labelRelativeY = 0.0,
-        labelRelativeW = 0.5,
-        labelRelativeH = 0.5,
+        labelRelativeW = 0.1,
+        labelRelativeH = 0.2,
         labelContent = "button",
         labelTextFormat = false,
-        labelFontsize = 15,
+        labelFontsize = 30,
         labelFontSpacing = 3,
         labelColor = rl.WHITE
     )
 
     rectData := OAU.init_uishapedata_rectangle()
-    rectangle := OAU.init_uishape(3, -0.45, -0.45, 0.1, 0.1, &form.data.absolute, rectData, false, rl.RED)
+    rectangle := OAU.init_uishape_relative(3, -0.45, -0.45, 0.1, 0.1, &form.data.absolute, rectData, false, rl.RED)
 
     circData := OAU.init_uishapedata_circle()
-    circle := OAU.init_uishape(4, -0.15, -0.45, 0.1, 0, &form.data.absolute, circData, false, rl.GREEN)
+    circle := OAU.init_uishape_relative(4, -0.15, -0.45, 0.1, 0, &form.data.absolute, circData, false, rl.GREEN)
 
     ellData := OAU.init_uishapedata_ellipse()
-    ellipse := OAU.init_uishape(4, -0.3, -0.45, 0.15, 0.1, &form.data.absolute, ellData, false, rl.PURPLE)
+    ellipse := OAU.init_uishape_relative(4, -0.3, -0.45, 0.15, 0.1, &form.data.absolute, ellData, false, rl.PURPLE)
 
     ringData := OAU.init_uishapedata_ring(0.5, 0, 360, 50)
-    ring := OAU.init_uishape(4, 0, -0.45, 0.1, 0, &form.data.absolute, ringData, false, rl.BLUE)
+    ring := OAU.init_uishape_relative(4, 0, -0.45, 0.1, 0, &form.data.absolute, ringData, false, rl.BLUE)
 
     triData := OAU.init_uishapedata_triangle(
         {0.5, 0.1}, {0, 0.8}, {0.9, 1}
     )
-    triangle := OAU.init_uishape(3, 0.15, -0.45, 0.1, 0.1, &form.data.absolute, triData, false, rl.RED)
+    triangle := OAU.init_uishape_relative(3, 0.15, -0.45, 0.1, 0.1, &form.data.absolute, triData, false, rl.RED)
 
 
     OAU.add_to_uiform(form, triangle, rectangle, circle, ellipse, ring)

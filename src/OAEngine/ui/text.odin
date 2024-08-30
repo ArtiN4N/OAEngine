@@ -27,7 +27,7 @@ UIText :: struct {
     font: UIFont
 }
 
-init_uitext :: proc(
+init_uitext_relative :: proc(
     zindex: u32,
     relativeX, relativeY, relativeW, relativeH: f32,
     parentData: ^UIData,
@@ -43,7 +43,48 @@ init_uitext :: proc(
         data = UIElementData{
             relative = relativeData,
             absolute = absoluteData,
-            draw = get_draw_data(absoluteData, parentData)
+            draw = get_draw_data(absoluteData, parentData),
+            useAbs = false
+        },
+        parentData = parentData,
+
+        content = content,
+        format = textFormat,
+
+        fontsize = fontsize,
+        fontSpacing = fontSpacing,
+
+        color = color,
+        // Default the font (stored with a no_nil union) to storing "false".
+        // This indicates to the program to use raylib's default font.
+        // Can set this font using the "set_uifont" procedure
+        font = UIFont{}
+    }
+
+    return
+}
+
+init_uitext_absolute_size :: proc(
+    zindex: u32,
+    relativeX, relativeY: f32,
+    absoluteW, absoluteH: f32,
+    parentData: ^UIData,
+    content: string, textFormat: union #no_nil { bool, ^bool, ^int, ^string },
+    fontsize: f32 = 0, fontSpacing: f32 = SPACING_DEFAULT,
+    color: rl.Color, font: UIFont = false
+) -> (text: UIText) {
+    relativeData := UIData{ relativeX, relativeY, 0, 0 }
+    absoluteData := get_absolute_data(relativeData, parentData)
+    absoluteData = UIData{ absoluteData.x, absoluteData.y, absoluteW, absoluteH }
+
+    text = {
+        zindex = zindex,
+
+        data = UIElementData{
+            relative = relativeData,
+            absolute = absoluteData,
+            draw = get_draw_data(absoluteData, parentData),
+            useAbs = false
         },
         parentData = parentData,
 
@@ -88,7 +129,14 @@ draw_uitext :: proc(text: ^UIText) {
     realSize := rl.MeasureTextEx(get_fontdata(text.font), cstr, fontsize, text.fontSpacing)
 
     // Update the absolute and for-drawing data for the element.
-    text.data.absolute = get_absolute_data(text.data.relative, text.parentData)
+    if text.data.useAbs {
+        absData := text.data.absolute
+        text.data.absolute = get_absolute_data(text.data.relative, text.parentData)
+        text.data.absolute = UIData{ text.data.absolute.x, text.data.absolute.y, absData.width, absData.height }
+    } else {
+        text.data.absolute = get_absolute_data(text.data.relative, text.parentData)
+    }
+
     text.data.absolute.width  = realSize.x
     text.data.absolute.height = realSize.y
     text.data.draw = get_draw_data(text.data.absolute, text.parentData)

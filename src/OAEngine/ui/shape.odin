@@ -312,7 +312,7 @@ UIShape :: struct {
     color: rl.Color,
 }
 
-init_uishape :: proc(
+init_uishape_relative :: proc(
     zindex: u32,
     relativeX, relativeY, relativeW, relativeH: f32,
     parentData: ^UIData,
@@ -330,7 +330,43 @@ init_uishape :: proc(
         boundingData = UIElementData{
             relative = relativeData,
             absolute = absoluteData,
-            draw = get_draw_data(absoluteData, parentData)
+            draw = get_draw_data(absoluteData, parentData),
+            useAbs = false
+        },
+        parentData = parentData,
+
+        shapeData = shapeData,
+
+        lines = lines,
+        lineThick = lineThick,
+        color = color
+    }
+
+    return
+}
+
+init_uishape_absolute :: proc(
+    zindex: u32,
+    relativeX, relativeY: f32,
+    absoluteW, absoluteH: f32,
+    parentData: ^UIData,
+    shapeData: UIShapeData,
+    lines: bool,
+    color: rl.Color,
+    lineThick: f32 = 1
+) -> (shape: UIShape) {
+    relativeData := UIData{ relativeX, relativeY, 0, 0 }
+    absoluteData := get_absolute_data(relativeData, parentData)
+    absoluteData = UIData{ absoluteData.x, absoluteData.y, absoluteW, absoluteH }
+
+    shape = UIShape{
+        zindex = zindex,
+
+        boundingData = UIElementData{
+            relative = relativeData,
+            absolute = absoluteData,
+            draw = get_draw_data(absoluteData, parentData),
+            useAbs = false
         },
         parentData = parentData,
 
@@ -345,7 +381,16 @@ init_uishape :: proc(
 }
 
 draw_uishape :: proc(shape: ^UIShape) {
-    shape.boundingData.absolute = get_absolute_data(shape.boundingData.relative, shape.parentData)
+    if shape.boundingData.useAbs {
+        absData := shape.boundingData.absolute
+        shape.boundingData.absolute = get_absolute_data(shape.boundingData.relative, shape.parentData)
+        shape.boundingData.absolute = UIData{
+            shape.boundingData.absolute.x, shape.boundingData.absolute.y,
+            absData.width, absData.height
+        }
+    } else {
+        shape.boundingData.absolute = get_absolute_data(shape.boundingData.relative, shape.parentData)
+    }
 
     switch v in shape.shapeData {
         case UIRectangleData:

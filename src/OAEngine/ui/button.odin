@@ -17,16 +17,21 @@ UIButton :: struct {
     // instead of having the option of it just not existing, the text should be set to an empty string.
     label: UIText,
 
-    // The callback function, that serves as the button's functionality
+    // The callback function, that serves as the button's functionality.
     callback: proc(),
+
+    // The mousedown function, that changes the appearence of the button if the mouse is down on the button.
+    mousedown: proc(rl.Color, int) -> rl.Color,
+    framesSinceRelease: int
 }
 
-init_uibutton :: proc(
+init_uibutton_relative :: proc(
     zindex: u32,
     relativeX, relativeY, relativeW, relativeH: f32,
     parentData: ^UIData,
     color: rl.Color,
-    callback: proc()
+    callback: proc(),
+    mousedown: proc(rl.Color, int) -> rl.Color
 ) -> (button: UIButton) {
     relativeData := UIData{ relativeX, relativeY, relativeW, relativeH }
     absoluteData := get_absolute_data(relativeData, parentData)
@@ -37,7 +42,8 @@ init_uibutton :: proc(
         data = UIElementData{
             relative = relativeData,
             absolute = absoluteData,
-            draw = get_draw_data(button.data.absolute, parentData)
+            draw = get_draw_data(button.data.absolute, parentData),
+            useAbs = false
         },
         parentData = parentData,
 
@@ -45,7 +51,45 @@ init_uibutton :: proc(
 
         label = UIText{},
 
-        callback = callback
+        callback = callback,
+        mousedown = mousedown,
+        framesSinceRelease = 900
+    }
+
+    return
+}
+
+init_uibutton_absolute_size :: proc(
+    zindex: u32,
+    relativeX, relativeY: f32,
+    absoluteW, absoluteH: f32,
+    parentData: ^UIData,
+    color: rl.Color,
+    callback: proc(),
+    mousedown: proc(rl.Color, int) -> rl.Color
+) -> (button: UIButton) {
+    relativeData := UIData{ relativeX, relativeY, 0, 0 }
+    absoluteData := get_absolute_data(relativeData, parentData)
+    absoluteData = UIData{ absoluteData.x, absoluteData.y, absoluteW, absoluteH }
+
+    button = UIButton{
+        zindex = zindex,
+
+        data = UIElementData{
+            relative = relativeData,
+            absolute = absoluteData,
+            draw = get_draw_data(button.data.absolute, parentData),
+            useAbs = true
+        },
+        parentData = parentData,
+
+        color = color,
+
+        label = UIText{},
+
+        callback = callback,
+        mousedown = mousedown,
+        framesSinceRelease = 900
     }
 
     return
@@ -64,7 +108,7 @@ add_uibutton_label :: proc(
     labelFontsize: f32 = 0, labelFontSpacing: f32 = SPACING_DEFAULT,
     labelColor: rl.Color, labelFont: UIFont = false
 ) {
-    button.label = init_uitext(
+    button.label = init_uitext_relative(
         labelZindex,
         labelRelativeX, labelRelativeY, labelRelativeW, labelRelativeH,
         &button.data.absolute,
@@ -77,18 +121,30 @@ add_uibutton_label :: proc(
 }
 
 draw_uibutton :: proc(button: ^UIButton) {
-    button.data.absolute = get_absolute_data(button.data.relative, button.parentData)
+    if button.data.useAbs {
+        absData := button.data.absolute
+        button.data.absolute = get_absolute_data(button.data.relative, button.parentData)
+        button.data.absolute = UIData{ button.data.absolute.x, button.data.absolute.y, absData.width, absData.height }
+    } else {
+        button.data.absolute = get_absolute_data(button.data.relative, button.parentData)
+    }
     button.data.draw = get_draw_data(button.data.absolute, button.parentData)
 
-    rl.DrawRectangleV(
-        get_posvector_from_data(button.data.draw),
-        get_sizevector_from_data(button.data.draw),
-        button.color
-    )
+    rect := get_rectangle_from_data(button.data.draw)
+
+    // If mouseleft is pressed down.
+    if rl.CheckCollisionPointRec(rl.GetMousePosition(), rect) && rl.IsMouseButtonDown(.LEFT) {
+        button.framesSinceRelease = 0
+    }
+
+    rectColor := button.mousedown(button.color, button.framesSinceRelease)
+    rl.DrawRectangleRec(rect, rectColor)
 
     // Don't bother if empty string.
     // Should make checkboxes more efficient.
     if button.label.content != "" {
         draw_uielement(&button.label)
     }
+
+    button.framesSinceRelease += 1
 }
