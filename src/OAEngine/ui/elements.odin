@@ -25,16 +25,4 @@ draw_uitextinput :: proc(textInp: UITextInput) {
 
 }
 
-UIImage :: struct {
-    data: UIElementData,
-
-    zindex: u32,
-}
-
-draw_uiimage :: proc(img: UIImage) {
-
-}
-
-
-
 draw_uielement :: proc{draw_uitext, draw_uibutton, draw_uishape, draw_uiimage, draw_uitextinput}
