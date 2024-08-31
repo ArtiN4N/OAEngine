@@ -49,6 +49,7 @@ GameAPI :: struct {
     lib: dynlib.Library,
     init_window: proc(),
     init: proc(),
+    load: proc(),
     update: proc() -> bool,
     shutdown: proc(),
     shutdown_window: proc(),
@@ -134,6 +135,7 @@ main :: proc() {
     game_api_version += 1
     game_api.init()
     game_api.init_window()
+    game_api.load()
 
     old_game_apis := make([dynamic]GameAPI, default_allocator)
 
@@ -165,6 +167,7 @@ main :: proc() {
                     unload_game_api(&game_api)
                     game_api = new_game_api
                     game_api.init()
+                    game_api.load()
                 } else {
                     append(&old_game_apis, game_api)
                     game_memory := game_api.memory()
@@ -173,6 +176,7 @@ main :: proc() {
 
                     
                     game_api.init()
+                    game_api.load()
 
                     game_api.hot_reloaded(game_memory)
                 }

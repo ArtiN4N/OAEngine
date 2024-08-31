@@ -74,8 +74,6 @@ draw :: proc(state: ^State) {
 game_init :: proc() {
     state = State{}
 
-    state.counter = 10
-
     state.cfg.windowWidth = 800
     state.cfg.windowHeight = 800
     state.cfg.windowTitle = "Game Title"
@@ -85,6 +83,11 @@ game_init :: proc() {
     state.cfg.vsync = false
     state.cfg.fullscreen = false
     state.cfg.resizeable = true
+}
+
+@(export)
+game_load :: proc() {
+    state.counter = 10
 
     state.formParent = { 0.0, 0.0, f32(state.cfg.windowWidth), f32(state.cfg.windowHeight) }
 
@@ -93,12 +96,12 @@ game_init :: proc() {
     state.memory^ = GameMemory {
     }
 
+    state.assets = OAE.init_assetmanager()
+    OAE.load_assetmanager_texture(&state.assets, "testimg", "assets/UIEditor/testimg.png")
+
     state.uis = OAU.init_uimanager()
     OAU.create_uiform(&state.uis, "testform")
     generate_testform(&state.uis["testform"], active = true)
-
-    state.assets = OAE.init_assetmanager()
-    OAE.load_assetmanager_font()
 
     game_hot_reloaded(state.memory)
 }
