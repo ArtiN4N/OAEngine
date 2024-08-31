@@ -8,19 +8,12 @@
 - [x] hot reloading
     - [x] bash scripts
     - [x] update game source code structure
-- [ ] UI editor
-<<<<<<< ours
-    - [ ] z-index
+- [ ] asset management
+    - [ ] textures
     - [ ] fonts
-    - [ ] text
-        - [ ] font
-        - [ ] size
-        - [ ] color
-        - [ ] animation
-            - [ ] delay
-            - [ ] shake
-    - [ ] button
-=======
+    - [ ] sfx
+    - [ ] music
+- [ ] UI editor
     - [x] z-index
     - [ ] fonts
     - [x] text
@@ -30,12 +23,14 @@
             - [ ] delay
             - [ ] shake
     - [x] button
->>>>>>> theirs
-        - [ ] link button
-        - [ ] checkbox
-        - [ ] cycle button
-        - [ ] callback button
-    - [ ] shapes
-    - [ ] popup
+        - [x] animation
+    - [x] shapes
+        - [x] rectangle
+        - [x] circle
+        - [x] ellipse
+        - [x] ring
+        - [x] triangle
+        - [ ] polygon
+    - [ ] popups
     - [ ] images
     - [ ] text input
