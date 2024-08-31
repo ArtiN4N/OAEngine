@@ -62,7 +62,8 @@ UIForm :: struct {
     data: UIElementData,
     parentData: ^UIFormParent,
     color: rl.Color,
-    square: bool,
+    keepRatio: bool,
+    relative: bool,
 
     texts: [dynamic]UIText,
     buttons: [dynamic]UIButton,
@@ -75,7 +76,7 @@ init_uiform_relative :: proc(
     relativeX, relativeY, relativeW, relativeH: f32,
     parentData: ^UIFormParent,
     color: rl.Color,
-    square: bool,
+    keepRatio: bool,
 ) -> (form: UIForm) {
     relativeData := UIData{ relativeX, relativeY, relativeW, relativeH }
     absoluteData := get_absolute_data(relativeData, parentData)
@@ -91,7 +92,8 @@ init_uiform_relative :: proc(
         },
         parentData = parentData,
         color = color,
-        square = square,
+        keepRatio = keepRatio,
+        relative = true,
         texts = make([dynamic]UIText),
         buttons = make([dynamic]UIButton),
         shapes = make([dynamic]UIShape),
@@ -108,19 +110,12 @@ init_uiform_absolute_size :: proc(
     absoluteW, absoluteH: f32,
     parentData: ^UIFormParent,
     color: rl.Color,
-    square: bool,
+    keepRatio: bool,
+    relative: bool = false
 ) -> (form: UIForm) {
     relativeData := UIData{ relativeX, relativeY, 0, 0 }
     absoluteData := get_absolute_data(relativeData, parentData)
     absoluteData = UIData{ absoluteData.x, absoluteData.y, absoluteW, absoluteH }
-
-    if square {
-        if absoluteData.height > absoluteData.width {
-            absoluteData.height = absoluteData.width
-        } else if absoluteData.height < absoluteData.width {
-            absoluteData.width = absoluteData.height
-        }
-    }
 
     form = UIForm{
         active = false,
@@ -133,7 +128,8 @@ init_uiform_absolute_size :: proc(
         },
         parentData = parentData,
         color = color,
-        square = square,
+        keepRatio = keepRatio,
+        relative = false,
         texts = make([dynamic]UIText),
         buttons = make([dynamic]UIButton),
         shapes = make([dynamic]UIShape),
@@ -189,11 +185,12 @@ draw_uiform :: proc(form: ^UIForm) {
         form.data.absolute = get_absolute_data(form.data.relative, form.parentData)
     }
 
-    if form.square {
-       if form.data.absolute.height > form.data.absolute.width {
-        form.data.absolute.height = form.data.absolute.width
-        } else if form.data.absolute.height < form.data.absolute.width {
-            form.data.absolute.width = form.data.absolute.height
+    if form.keepRatio {
+        using form.data
+        if draw.width > draw.height {
+            draw.width = (relative.width / relative.height) * draw.height
+        } else if draw.width < draw.height {
+            draw.height = (relative.height / relative.width) * draw.width
         }
     }
 

@@ -5,7 +5,7 @@ import "core:fmt"
 import "core:strings"
 
 UIRectangleData :: struct {
-    square: bool,
+    keepRatio: bool,
     rounded: struct {
         active: bool,
         roundness: f32,
@@ -21,7 +21,7 @@ UIRectangleData :: struct {
 }
 
 init_uishapedata_rectangle :: proc(
-    square: bool = false,
+    keepRatio: bool = false,
     rounded: bool = false,
     roundness: f32 = 0,
     segments: i32 = 1,
@@ -33,7 +33,7 @@ init_uishapedata_rectangle :: proc(
     vertex4: rl.Color = rl.WHITE
 ) -> (data: UIRectangleData) {
     data = UIRectangleData{
-        square = square,
+        keepRatio = keepRatio,
         rounded = {
             active = rounded,
             roundness = roundness,
@@ -54,11 +54,12 @@ init_uishapedata_rectangle :: proc(
 draw_uishape_rectangle :: proc(shape: ^UIShape, data: UIRectangleData) {
     shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
 
-    if data.square {
-        if shape.boundingData.draw.width > shape.boundingData.draw.height {
-            shape.boundingData.draw.width = shape.boundingData.draw.height
-        } else if shape.boundingData.draw.width < shape.boundingData.draw.height {
-            shape.boundingData.draw.height = shape.boundingData.draw.width
+    if data.keepRatio {
+        using shape.boundingData
+        if draw.width > draw.height {
+            draw.width = (relative.width / relative.height) * draw.height
+        } else if draw.width < draw.height {
+            draw.height = (relative.height / relative.width) * draw.width
         }
     }
 
@@ -169,16 +170,27 @@ draw_uishape_circle :: proc(shape: ^UIShape, data: UICircleData) {
     }
 }
 
-UIEllipseData :: struct {}
+UIEllipseData :: struct {
+    keepRatio: bool
+}
 
-init_uishapedata_ellipse :: proc() -> (data: UIEllipseData) {
-    data = UIEllipseData{}
+init_uishapedata_ellipse :: proc(keepRatio: bool = false) -> (data: UIEllipseData) {
+    data = UIEllipseData{ keepRatio }
 
     return
 }
 
 draw_uishape_ellipse :: proc(shape: ^UIShape, data: UIEllipseData) {
     // No need to calculate draw data, since circles are drawn with their center already
+    if data.keepRatio {
+        using shape.boundingData
+        if draw.width > draw.height {
+            draw.width = (relative.width / relative.height) * draw.height
+        } else if draw.width < draw.height {
+            draw.height = (relative.height / relative.width) * draw.width
+        }
+    }
+
     radiusHori := shape.boundingData.absolute.width / 2
     radiusVert := shape.boundingData.absolute.height / 2
 

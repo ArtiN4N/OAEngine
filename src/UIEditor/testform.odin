@@ -13,7 +13,7 @@ generate_testform :: proc(form: ^OAU.UIForm, active: bool = false) {
         relativeH = 0.9,
         parentData = &state.formParent,
         color = rl.WHITE,
-        square = false,
+        keepRatio = false,
     )
     form.active = active
 
@@ -81,7 +81,7 @@ generate_testform :: proc(form: ^OAU.UIForm, active: bool = false) {
         labelColor = rl.WHITE
     )
 
-    rectData := OAU.init_uishapedata_rectangle(square = true)
+    rectData := OAU.init_uishapedata_rectangle(keepRatio = true)
     rectangle := OAU.init_uishape_relative(3, -0.45, -0.45, 0.1, 0.1, &form.data.absolute, rectData, false, rl.RED)
 
     circData := OAU.init_uishapedata_circle()
@@ -98,8 +98,9 @@ generate_testform :: proc(form: ^OAU.UIForm, active: bool = false) {
     )
     triangle := OAU.init_uishape_relative(3, 0.15, -0.45, 0.1, 0.1, &form.data.absolute, triData, false, rl.RED)
 
-
     OAU.add_to_uiform(form, triangle, rectangle, circle, ellipse, ring)
+
+
 
     return
 }
