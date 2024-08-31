@@ -52,16 +52,16 @@ init_uishapedata_rectangle :: proc(
 }
 
 draw_uishape_rectangle :: proc(shape: ^UIShape, data: UIRectangleData) {
-    shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
-
     if data.keepRatio {
         using shape.boundingData
-        if draw.width > draw.height {
-            draw.width = (relative.width / relative.height) * draw.height
-        } else if draw.width < draw.height {
-            draw.height = (relative.height / relative.width) * draw.width
+        if absolute.width > absolute.height {
+            absolute.width = (relative.width / relative.height) * absolute.height
+        } else {
+            absolute.height = (relative.height / relative.width) * absolute.width
         }
     }
+
+    shape.boundingData.draw = get_draw_data(shape.boundingData.absolute, shape.parentData)
 
     rect := get_rectangle_from_data(shape.boundingData.draw)
 
@@ -184,10 +184,10 @@ draw_uishape_ellipse :: proc(shape: ^UIShape, data: UIEllipseData) {
     // No need to calculate draw data, since circles are drawn with their center already
     if data.keepRatio {
         using shape.boundingData
-        if draw.width > draw.height {
-            draw.width = (relative.width / relative.height) * draw.height
-        } else if draw.width < draw.height {
-            draw.height = (relative.height / relative.width) * draw.width
+        if absolute.width > absolute.height {
+            absolute.width = (relative.width / relative.height) * absolute.height
+        } else {
+            absolute.height = (relative.height / relative.width) * absolute.width
         }
     }
 

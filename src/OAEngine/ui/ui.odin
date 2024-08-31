@@ -187,10 +187,10 @@ draw_uiform :: proc(form: ^UIForm) {
 
     if form.keepRatio {
         using form.data
-        if draw.width > draw.height {
-            draw.width = (relative.width / relative.height) * draw.height
-        } else if draw.width < draw.height {
-            draw.height = (relative.height / relative.width) * draw.width
+        if absolute.width > absolute.height {
+            absolute.width = (relative.width / relative.height) * absolute.height
+        } else {
+            absolute.height = (relative.height / relative.width) * absolute.width
         }
     }
 
@@ -243,7 +243,7 @@ draw_uiform :: proc(form: ^UIForm) {
             case &shpIndx:
                 draw_uielement(&shps[selectedIndx^])
             case &imgIndx:
-                //draw_uielement(&imgs[selectedIndx^])
+                draw_uielement(&imgs[selectedIndx^])
             case &tInIndx:
                 //draw_uielement(&tIns[selectedIndx^])
         }
