@@ -4,6 +4,26 @@ import "core:fmt"
 import math_bits "core:math/bits"
 import rl "vendor:raylib"
 
+UIManager :: map[string]UIForm
+
+init_uimanager :: proc() -> (manager: UIManager) {
+    manager = make(map[string]UIForm)
+
+    return
+}
+
+delete_uimanager :: proc(manager: ^UIManager) {
+    for _, &form in manager {
+        delete_uiform(&form)
+    }
+
+    delete(manager^)
+}
+
+create_uiform :: proc(manager: ^UIManager, tag: string) {
+    manager[tag] = UIForm{}
+}
+
 // base struct that holds position and size for all Ui elements
 UIData :: struct {
     x: f32,
