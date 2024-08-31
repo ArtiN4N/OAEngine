@@ -42,7 +42,7 @@ init_uibutton_relative :: proc(
         data = UIElementData{
             relative = relativeData,
             absolute = absoluteData,
-            draw = get_draw_data(button.data.absolute, parentData),
+            draw = get_draw_data(absoluteData, parentData),
             useAbs = false
         },
         parentData = parentData,
