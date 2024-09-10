@@ -100,7 +100,9 @@ generate_testform :: proc(form: ^OAU.UIForm, active: bool = false) {
 
     OAU.add_to_uiform(form, triangle, rectangle, circle, ellipse, ring)
 
+    img1 := OAU.init_uiimage_relative(5, 0, 0, 0.2, 0.2, &form.data.absolute, &state.assets.textures["testimg"])
 
+    OAU.add_to_uiform(form, img1)
 
     return
 }
